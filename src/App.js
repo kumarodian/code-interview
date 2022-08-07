@@ -3,6 +3,7 @@ import "./App.css";
 
 function App() {
   const [data, setData] = React.useState([]);
+  const [filterText, setFilterText] = React.useState("");
   let totalCost = 0;
   React.useEffect(() => {
     for (let i = 1; i <= 3; i++)
@@ -22,20 +23,18 @@ function App() {
     return 0;
   });
 
-  let sumUpdata = data.reduce((b, a) => {
-    let ind = b.findIndex((e) => e.name === a.name);
-    let c = a.name.toLowerCase().split(" ").join("");
+  let sumUpdata = [];
+  data.forEach((item) => {
+    let ind = sumUpdata.findIndex((e) => e.name === item.name);
     if (ind > -1) {
-      if (!b[ind].total) b[ind].total = 0;
-      b[ind].total += a.unitPrice * a.sold;
+      sumUpdata[ind].total += item.sold * item.unitPrice;
     } else {
-      a[c] = +a[c] || 0;
-      if (!a.total) a.total = 0;
-      a.total += a.unitPrice * a.sold;
-      b.push(a);
+      sumUpdata.push({ ...item, total: item.sold * item.unitPrice });
     }
-    return b;
-  }, []);
+  });
+  function filterData(text) {
+    setFilterText(text);
+  }
   const store = (
     <table>
       <thead>
@@ -46,6 +45,8 @@ function App() {
       </thead>
       <tbody>
         {sumUpdata.map(({ id, name, total }) => {
+          if (filterText.length > 0 && name.toLowerCase().indexOf(filterText))
+            return;
           totalCost += total;
           return (
             <tr key={id + name}>
@@ -61,7 +62,18 @@ function App() {
       </tbody>
     </table>
   );
-  return <div>{store}</div>;
+  return (
+    <div id="container">
+      <div className="search">
+        <label>Search Item :</label>
+        <input
+          value={filterText}
+          onChange={(e) => filterData(e.target.value)}
+        />
+      </div>
+      {store}
+    </div>
+  );
 }
 
 export default App;
